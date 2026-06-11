@@ -1,0 +1,27 @@
+# 实现计划
+
+## 步骤
+
+1. 初始化 Vite + TypeScript 项目与依赖 — Done
+   创建 package.json、tsconfig、vite 配置，安装 pdfjs-dist 与 tesseract.js。
+
+2. 实现 PDF 文本提取与扫描页 OCR — Done
+   pdfExtractor.ts 支持文本层提取，不足时渲染页面并 OCR。
+
+3. 实现图片 OCR 与 Markdown 格式化 — Done
+   imageOcr.ts 与 markdownConverter.ts 完成文字转 Markdown 逻辑。
+
+4. 实现扩展 UI（拖拽上传、进度、下载） — Done
+   main.ts 提供拖拽区、进度条、预览与下载按钮。
+
+5. 配置 manifest、background、打包脚本 — Done
+   MV3 manifest、background 打开页面、pack-extension.mjs 复制 worker 资源。
+
+6. 构建验证 — Done
+   npm run pack 成功，产物位于 extension-package/。
+
+7. PDF 页码选择（全部 / 指定范围） — Done
+   新增 pageRange.ts、PDF 页码选择 UI，支持如 1-10, 20-30 的范围转换。
+
+8. 下载文件名选择（原文件名 / 自定义） — Done
+   预览区增加命名方式选择，支持默认原文件名或用户自定义下载名称。

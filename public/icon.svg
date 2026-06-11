@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none">
+  <rect width="128" height="128" rx="24" fill="#1a73e8"/>
+  <path d="M36 32h40l16 16v48H36V32z" fill="#fff" fill-opacity="0.95"/>
+  <path d="M76 32v16h16" stroke="#1a73e8" stroke-width="3" fill="none"/>
+  <text x="44" y="72" font-family="Georgia, serif" font-size="22" font-weight="bold" fill="#1a73e8">M</text>
+  <text x="58" y="88" font-family="monospace" font-size="14" fill="#5f6368">�</text>
+  <rect x="44" y="94" width="40" height="4" rx="2" fill="#34a853"/>
+  <rect x="44" y="102" width="32" height="4" rx="2" fill="#34a853" fill-opacity="0.6"/>
+</svg>

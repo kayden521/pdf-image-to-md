@@ -1,0 +1,20 @@
+{
+  "name": "pdf-image-to-md",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "pack": "npm run build && node scripts/pack-extension.mjs"
+  },
+  "dependencies": {
+    "pdfjs-dist": "^4.10.38",
+    "tesseract.js": "^6.0.1"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.319",
+    "typescript": "~5.8.3",
+    "vite": "^6.3.5"
+  }
+}
