@@ -1,4 +1,5 @@
 import { createWorker, PSM, type Worker } from "tesseract.js";
+import { normalizeOcrLineBreaks } from "./markdownConverter";
 
 let sharedWorker: Worker | null = null;
 let currentProgressHandler: ((progress: number, message: string) => void) | undefined;
@@ -51,7 +52,7 @@ export async function ocrImageFile(
 
   try {
     const result = await worker.recognize(file);
-    return result.data.text.trim();
+    return normalizeOcrLineBreaks(result.data.text.trim());
   } finally {
     currentProgressHandler = undefined;
   }

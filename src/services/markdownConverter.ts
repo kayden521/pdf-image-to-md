@@ -1,5 +1,54 @@
 const HEADING_MAX_LENGTH = 80;
 const HEADING_PATTERN = /^第[一二三四五六七八九十百千\d]+[章节部分篇]|^[\d]+[.、]\s*.+/;
+const LINE_BREAK_BEFORE_PUNCTUATION =
+  /[\n\r]+[\t ]*(?=[，。！？；：、）】》」』"'…．.!?;:)\]}>"'»])/;
+const CJK_CHAR_PATTERN = /[\u3400-\u9fff]/;
+
+export function normalizeOcrLineBreaks(text: string): string {
+  let normalized = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+
+  normalized = normalized.replace(
+    new RegExp(LINE_BREAK_BEFORE_PUNCTUATION.source, "g"),
+    "",
+  );
+
+  normalized = normalized.replace(
+    /([^\n。！？!?…])\s*\n+\s*(?=\S)/g,
+    (match, before: string, offset: number, source: string) => {
+      const nextIndex = offset + match.length;
+      const nextChar = source[nextIndex] ?? "";
+      const nextSlice = source.slice(nextIndex, nextIndex + 4);
+
+      if (nextChar === "#" || /^[-•*]\s/.test(nextSlice)) {
+        return match;
+      }
+
+      if (CJK_CHAR_PATTERN.test(before) && CJK_CHAR_PATTERN.test(nextChar)) {
+        return before;
+      }
+
+      if (CJK_CHAR_PATTERN.test(before) && /[的之了地得和在以及与及]/.test(nextChar)) {
+        return before;
+      }
+
+      if (before.endsWith("-") && /^[A-Za-z]/.test(nextChar)) {
+        return before.slice(0, -1);
+      }
+
+      if (/[A-Za-z0-9]$/.test(before) && /^[A-Za-z0-9]/.test(nextChar)) {
+        return `${before} `;
+      }
+
+      if (/[\u3400-\u9fffA-Za-z0-9（(]/.test(nextChar)) {
+        return before;
+      }
+
+      return match;
+    },
+  );
+
+  return normalized;
+}
 
 interface PositionedText {
   text: string;
@@ -9,7 +58,7 @@ interface PositionedText {
 }
 
 export function plainTextToMarkdown(text: string, title?: string): string {
-  const normalized = text.replace(/\r\n/g, "\n").trim();
+  const normalized = normalizeOcrLineBreaks(text).trim();
   if (!normalized) {
     return title ? `# ${stripExtension(title)}\n\n` : "";
   }
@@ -26,7 +75,7 @@ export function plainTextToMarkdown(text: string, title?: string): string {
       .split("\n")
       .map((line) => line.trim())
       .filter(Boolean)
-      .join(" ");
+      .join("");
 
     if (!paragraph) {
       continue;
@@ -106,7 +155,7 @@ export function positionedTextToMarkdown(
   }
   flushLine();
 
-  return `${lines.join("\n").trim()}\n`;
+  return `${normalizeOcrLineBreaks(lines.join("\n")).trim()}\n`;
 }
 
 function isHeadingLine(line: string): boolean {
