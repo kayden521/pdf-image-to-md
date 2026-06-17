@@ -4,6 +4,52 @@ import { positionedTextToMarkdown } from "./markdownConverter";
 import { ocrCanvas } from "./imageOcr";
 
 const MIN_TEXT_CHARS_PER_PAGE = 24;
+const PDF_OCR_RENDER_SCALE = 3;
+const PDFJS_VERSION = "4.10.38";
+
+function getPdfDocumentInit(data: ArrayBuffer) {
+  if (typeof chrome !== "undefined" && chrome.runtime?.getURL) {
+    return {
+      data,
+      cMapUrl: chrome.runtime.getURL("cmaps/"),
+      cMapPacked: true,
+      standardFontDataUrl: chrome.runtime.getURL("standard_fonts/"),
+    };
+  }
+
+  return {
+    data,
+    cMapUrl: `https://cdn.jsdelivr.net/npm/pdfjs-dist@${PDFJS_VERSION}/cmaps/`,
+    cMapPacked: true,
+    standardFontDataUrl: `https://cdn.jsdelivr.net/npm/pdfjs-dist@${PDFJS_VERSION}/standard_fonts/`,
+  };
+}
+
+function isGarbledText(text: string): boolean {
+  if (!text.trim()) {
+    return true;
+  }
+
+  const replacementCount = (text.match(/�/g) ?? []).length;
+  if (replacementCount > 0 && replacementCount / text.length > 0.05) {
+    return true;
+  }
+
+  const readableChars = text.match(/[\p{L}\p{N}\u3400-\u9fff]/gu) ?? [];
+  return readableChars.length / text.length < 0.35;
+}
+
+function shouldUsePdfTextLayer(rawText: string): boolean {
+  if (rawText.length < MIN_TEXT_CHARS_PER_PAGE) {
+    return false;
+  }
+
+  if (isGarbledText(rawText)) {
+    return false;
+  }
+
+  return true;
+}
 
 function getPdfWorkerSrc(): string {
   if (typeof chrome !== "undefined" && chrome.runtime?.getURL) {
@@ -40,11 +86,11 @@ async function extractPageText(page: pdfjsLib.PDFPageProxy): Promise<string> {
   const positioned = textItemsToPositioned(textContent.items as TextItem[]);
   const rawText = positioned.map((item) => item.text).join("").trim();
 
-  if (rawText.length >= MIN_TEXT_CHARS_PER_PAGE) {
+  if (shouldUsePdfTextLayer(rawText)) {
     return positionedTextToMarkdown(positioned);
   }
 
-  const viewport = page.getViewport({ scale: 2 });
+  const viewport = page.getViewport({ scale: PDF_OCR_RENDER_SCALE });
   const canvas = document.createElement("canvas");
   canvas.width = Math.floor(viewport.width);
   canvas.height = Math.floor(viewport.height);
@@ -60,7 +106,7 @@ async function extractPageText(page: pdfjsLib.PDFPageProxy): Promise<string> {
 }
 
 export async function getPdfPageCount(data: ArrayBuffer): Promise<number> {
-  const pdf = await pdfjsLib.getDocument({ data }).promise;
+  const pdf = await pdfjsLib.getDocument(getPdfDocumentInit(data)).promise;
   return pdf.numPages;
 }
 
@@ -69,7 +115,7 @@ export async function extractPdfToMarkdown(
   pageNumbers?: number[],
   onProgress?: (progress: PdfProgress) => void,
 ): Promise<string> {
-  const pdf = await pdfjsLib.getDocument({ data }).promise;
+  const pdf = await pdfjsLib.getDocument(getPdfDocumentInit(data)).promise;
   const pagesToProcess =
     pageNumbers && pageNumbers.length > 0
       ? pageNumbers

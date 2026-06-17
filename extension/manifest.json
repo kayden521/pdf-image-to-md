@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "文字转 Markdown",
   "short_name": "转MD",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "将 PDF 与图片中的文字提取并转换为可下载的 Markdown 文件。",
   "icons": {
     "128": "icons/icon.svg"
@@ -18,10 +18,9 @@
   },
   "permissions": [],
   "host_permissions": [
-    "https://tessdata.projectnaptha.com/*",
     "https://cdn.jsdelivr.net/*"
   ],
   "content_security_policy": {
-    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; worker-src 'self'; connect-src 'self' https://tessdata.projectnaptha.com https://cdn.jsdelivr.net"
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; worker-src 'self'; connect-src 'self' https://cdn.jsdelivr.net"
   }
 }

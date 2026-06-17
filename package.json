@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
-    "pack": "npm run build && node scripts/pack-extension.mjs"
+    "pack": "npm run build && node scripts/pack-extension.mjs",
+    "prepare:lang": "node scripts/copy-tesseract-lang.mjs"
   },
   "dependencies": {
     "pdfjs-dist": "^4.10.38",

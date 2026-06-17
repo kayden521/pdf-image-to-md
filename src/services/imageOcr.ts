@@ -1,4 +1,4 @@
-import { createWorker, type Worker } from "tesseract.js";
+import { createWorker, PSM, type Worker } from "tesseract.js";
 
 let sharedWorker: Worker | null = null;
 let currentProgressHandler: ((progress: number, message: string) => void) | undefined;
@@ -8,12 +8,12 @@ function getTesseractOptions() {
     typeof chrome !== "undefined" && chrome.runtime?.getURL
       ? {
           workerPath: chrome.runtime.getURL("tesseract/worker.min.js"),
+          langPath: chrome.runtime.getURL("tesseract/lang"),
         }
       : {};
 
   return {
     ...extensionPaths,
-    langPath: "https://tessdata.projectnaptha.com/4.0.0_best",
     logger: (message: { status: string; progress?: number }) => {
       if (message.status === "recognizing text") {
         const percent = Math.round((message.progress ?? 0) * 100);
@@ -28,7 +28,10 @@ async function getWorker(): Promise<Worker> {
     return sharedWorker;
   }
 
-  sharedWorker = await createWorker("chi_sim+eng", 1, getTesseractOptions());
+  sharedWorker = await createWorker(["chi_sim", "eng"], 1, getTesseractOptions());
+  await sharedWorker.setParameters({
+    tessedit_pageseg_mode: PSM.AUTO,
+  });
   return sharedWorker;
 }
 

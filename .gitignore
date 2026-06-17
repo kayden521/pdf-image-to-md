@@ -1,4 +1,5 @@
 node_modules
 dist
 extension-package
+public/tesseract/lang/*.traineddata.gz
 .DS_Store
